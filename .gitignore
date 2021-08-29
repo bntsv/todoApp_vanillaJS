@@ -1,0 +1,5 @@
+**/node_modules/**
+.sass-cache
+
+# db.json should be ignored (i.e. uncomment next line), after repo is clonned
+db.json
