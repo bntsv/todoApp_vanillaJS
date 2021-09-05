@@ -1,5 +1,13 @@
+"use strict";
+
+function storeLocally(todosArr){
+    localStorage.setItem('todos',JSON.stringify(todosArr));
+}
+
 function renderTodos(todosArr) {
-    domEl.ul.innerHTML = ``;
+    domEl.ol.innerHTML = ``;
+    domEl.ol.type.value
+
     todosArr.forEach(todo => {
         let li = document.createElement("li");
 
@@ -10,7 +18,7 @@ function renderTodos(todosArr) {
         <div class="editTodo"><i class="fas fa-check"></i></div>
         `;
 
-        domEl.ul.appendChild(li);
+        domEl.ol.appendChild(li);
         li.addEventListener("click", removeTodo);
         li.addEventListener("click", toggleCompleted);
     })
@@ -22,19 +30,22 @@ function addTodo() {
     let todoTitle = domEl.userInput.value;
     if (!todoTitle) return;
 
-    let currentLastTodoID = todosArr[todosArr.length-1].id;
+    // let currentLastTodoID = todosArr[todosArr.length-1].id;
+    const id = todosArr.length ? todosArr[todosArr.length-1].id + 1 : 1;
 
     let todo = {
-        id: currentLastTodoID+1,
+        // id: currentLastTodoID+1,
+        id: id,
         title: todoTitle,
         completed: false
     };
 
-    console.log(todo.id);
-    todosArr.push(todo)
+    todosArr = [...todosArr, todo];
 
     domEl.userInput.value = "";
     domEl.userInput.focus();
+
+    storeLocally(todosArr);
     renderTodos(todosArr);
 }
 
@@ -52,11 +63,11 @@ function removeTodo(evt) {
     // }
     if (removeBtnID === todoID) {
 
-        // console.log(`remove`);
         let idx = todosArr.findIndex(todo => todo.id === todoID);
-        // console.log(idx);
+        
         idx >= 0 && todosArr.splice(idx, 1);
-
+        
+        storeLocally(todosArr);
         renderTodos(todosArr);
     }
 }
@@ -74,27 +85,43 @@ function toggleCompleted(evt) {
         let idx = todosArr.findIndex(todo => todo.id === todoID);
         todosArr[idx].completed = !todosArr[idx].completed;
 
+        storeLocally(todosArr);
         renderTodos(todosArr);
     }
 }
 
-let apiUrl = `https://jsonplaceholder.typicode.com/todos`;
-(function(){
-    fetch(`${apiUrl}`)
-    .then(response => response.json())
-    .then(data => {
-        todosArr = [...todosArr, ...data];
-        renderTodos(todosArr)
-    })
-    .catch(err => console.error(err))
-})();
+// let apiUrl = `https://jsonplaceholder.typicode.com/todos`;
+// (function fetchTodos(){
+//     fetch(`${apiUrl}`)
+//     .then(response => response.json())
+//     .then(data => {
+
+//         //if the following code is used undefined is added to the end of the array?! (todosArr = undefined)
+//         todosArr = [...todosArr, data];
+//         console.log(todosArr);
+        
+//         //if the following code is used upon refresh the changes are not rendered BUT are still kept in Local Storage...
+//         todosArr = data;
+//         console.log(todosArr);
+
+//         // localStorage.setItem('todos',JSON.stringify(todosArr));
+
+//         renderTodos(todosArr)
+//     })
+//     .catch(err => console.error(err))
+// })();
 
 let domEl = {
     userInput: document.querySelector(".todo-add > input"),
     addBtn: document.querySelector(".todo-add-btn"),
-    ul: document.querySelector(".todo-items"),
+    ol: document.querySelector(".todo-items"),
     total: document.querySelector(".output")
 }
-let todosArr = [];
+let localStorage = window.localStorage;
+let todosArr = JSON.parse(localStorage.getItem('todos')) || [];
+
+window.addEventListener('DOMContentLoaded', event=>{
+	renderTodos(todosArr);
+});
 
 domEl.addBtn.addEventListener("click", addTodo);
